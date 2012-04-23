@@ -28,7 +28,18 @@ public:
 	//byte[8]
 	byte* not_after() const  {
 	}
-
+	bool verify(const Cert& cert)  {
+		if (subject() != cert.issuer())
+			return false;
+		/*if (Timer::date() > cert.date())
+			return false;
+		разобрать cert, выделить подписываемую часть (tbsCertificate);
+		разобрать cert, выделить Ё÷ѕ (signatureValue);
+		if (!bign_verify(belt_hash(tbsCertificate),
+		signatureValue , pubkey())
+		return false;*/
+		return true;
+	}
 	Cert(void)
 	{
 	}
