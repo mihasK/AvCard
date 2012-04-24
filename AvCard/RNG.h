@@ -6,7 +6,7 @@ class RNG : public CardObject
 {
 public:
 
-	unsigned char* get(unsigned count);
+	byte* get(unsigned count);
 	RNG(void);
 	~RNG(void);
 };

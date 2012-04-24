@@ -3,10 +3,10 @@
 #include <time.h>
 using namespace std;
 
-unsigned char* RNG::get(unsigned count){
-	unsigned char* bytes=new unsigned char[count];
+byte* RNG::get(unsigned count){
+	byte* bytes=new byte[count];
 	for(int i=0;i<count;i++)
-		bytes[i]=(unsigned char)rand();
+		bytes[i]=(byte)rand();
 	return bytes;
 }
 

@@ -1,4 +1,7 @@
 #pragma once
+
+typedef unsigned char byte ;
+
 class CardObject
 {
 private:
