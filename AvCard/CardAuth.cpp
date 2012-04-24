@@ -3,6 +3,7 @@
 
 CardAuth::CardAuth(void)
 {
+	
 }
 
 

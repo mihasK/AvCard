@@ -1,7 +1,7 @@
 #pragma once
 #include "cardobject.h"
-class TermAuth :
-	public CardObject
+
+class TermAuth : public CardObject
 {
 		/*
 	policy:
@@ -27,8 +27,9 @@ public:
 
 	//[cmd:<External Authenticate >]
 	bool auth(const char* response); //char[24]
+
 	TermAuth(void);
 	~TermAuth(void);
 
 		
-}
+};

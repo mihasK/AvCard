@@ -11,5 +11,5 @@ int main(){
 		cout<<(int)bytes[i]<<" ";
 	cout<<endl;
 	system("PAUSE");
-	delete[] bytes;
+	delete[100] bytes;
 }
