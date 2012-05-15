@@ -8,7 +8,7 @@
 #include "bign.h"
 using namespace std;
 
-#define PUBKEY_LENGHT 256
+#define PUBKEY_LENGHT BIGN_PUBKEY_LENGHT
 
 class Cert :
 	public CardObject

@@ -3,6 +3,8 @@
 
 #include "point.h"
 
+#define BIGN_PRIVKEY_LENGHT 32
+#define BIGN_PUBKEY_LENGHT 64
 
 typedef struct _bign_privkey {
 	BigInt d;
