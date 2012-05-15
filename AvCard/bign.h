@@ -3,6 +3,7 @@
 
 #include "point.h"
 
+
 typedef struct _bign_privkey {
 	BigInt d;
 } bign_privkey;
