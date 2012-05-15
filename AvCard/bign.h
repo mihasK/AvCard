@@ -28,7 +28,6 @@ EXTERN_C void bign_dh(byte *k, uint32 kSize, byte *P, uint32 pSize, byte* to);
 
 EXTERN_C void bign_prng(uint32 n, byte* Sigma, byte *S, byte *to);
 
-EXTERN_C void bign_hmac(byte *Sigma, byte *S, byte *to);
-
+EXTERN_C void brng_hmac(byte *Sigma, byte *S, byte *to, uint32 length);
 
 #endif

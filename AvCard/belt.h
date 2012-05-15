@@ -2,7 +2,8 @@
 #define __BELT_H
 #include "typedef.h"
 
-#define BELT_HASH_LENGHT 256
+#define BELT_HASH_LENGHT 32
+#define BELT_KEY_LENGHT 32
 
 EXTERN_C void belt_ecb_ecnr(byte *X, uint32 size, byte *Sigma, byte *to);
 
