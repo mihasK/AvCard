@@ -1,53 +1,71 @@
-#ifndef __BIGINT_H_
-#define __BIGINT_H_
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "typedef.h"
 
-#define MAX_LEN 16
+#define MAX_LEN 64
+#define MAX_VALUE ((1ULL << 32) - 1)
 
-typedef struct {
-	uint32 length;
-	uint32 data[MAX_LEN + 1];
-} BigInt, * pBigInt;
-
-typedef enum {
-	OVERFLOW_ERROR = 1,
-	DIVIDE_BY_ZERO_ERROR = 2, 
-	SUCCESS_OPERATION = 0
-} ERROR_CODE;
-
-
-typedef enum {
-	LESS = -1, 
-	EQUAL = 0,
-	GREATER = 1
-} COMPARE_RESULT;
-
-EXTERN_C void vRead_BigInt(pBigInt to, void * from, uint32 size);
-
-EXTERN_C COMPARE_RESULT eCompare_BigInt(pBigInt a, pBigInt b);
-
-EXTERN_C ERROR_CODE eAdd_BigInt(pBigInt to, pBigInt a, pBigInt b);
-
-EXTERN_C ERROR_CODE eSubtract_BigInt(pBigInt to, pBigInt a, pBigInt b);
-
-EXTERN_C ERROR_CODE eMultiply_BigInt(pBigInt to, pBigInt a, pBigInt b);
-
-EXTERN_C ERROR_CODE eDivide_BigInt(pBigInt div, pBigInt rem, pBigInt a, pBigInt b);
-
-EXTERN_C ERROR_CODE eAdd_BigInt_Mod(pBigInt to, pBigInt a, pBigInt b, pBigInt mod);
-
-EXTERN_C ERROR_CODE eSubtract_BigInt_Mod(pBigInt to, pBigInt a, pBigInt b, pBigInt mod);
-
-EXTERN_C ERROR_CODE eMultiply_BigInt_Mod(pBigInt to, pBigInt a, pBigInt b, pBigInt mod);
-
-EXTERN_C ERROR_CODE eDivide_BigInt_Mod(pBigInt div, pBigInt rem, pBigInt a, pBigInt b, pBigInt mod);
-
-EXTERN_C ERROR_CODE eExp_BigInt(pBigInt to, pBigInt a, pBigInt e);
-
-EXTERN_C ERROR_CODE eExp_BigInt_Mod(pBigInt to, pBigInt a, pBigInt e, pBigInt mod);
-
-EXTERN_C ERROR_CODE eSquareRoot_BigInt_Mod(pBigInt to, pBigInt a, pBigInt mod);
-
-EXTERN_C BOOL bIsProbablePrime_BigInt(pBigInt a);
-
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+class BigInteger {
+private:
+	size_t length;
+	uint32 data[1 + MAX_LEN];
+
+
+	void LevelUp();
+
+public:
+	BigInteger();
+
+
+	BigInteger(byte *data, int length) ;
+
+	BigInteger& operator=(const BigInteger &another);
+
+
+	friend bool operator==(const BigInteger &a, const BigInteger &b) ;
+	friend bool operator >(const BigInteger &a, const BigInteger &b) ;
+	friend bool operator <(const BigInteger &a, const BigInteger &b) ;
+
+	friend bool operator <=(const BigInteger &a, const BigInteger &b);
+
+	friend bool operator >=(const BigInteger &a, const BigInteger &b) ;
+
+	BigInteger& operator+=(const BigInteger& another) ;
+	//works only if this >= another, must be checked on higher level
+	BigInteger& operator-=(const BigInteger& another);
+
+	BigInteger& operator*=(const uint32& b) ;
+	BigInteger& operator *= (const BigInteger& another);
+
+
+
+	BigInteger& operator/=(const BigInteger& another);
+
+	BigInteger& operator %= (const BigInteger &another) ;
+
+	friend BigInteger operator % (const BigInteger &a, const BigInteger &b) ;
+
+	friend BigInteger operator/ (const BigInteger &a, const BigInteger &b);
+
+	friend BigInteger operator+(const BigInteger &a, const BigInteger& b) ;
+
+	friend BigInteger operator-(const BigInteger &a, const BigInteger& b) ;
+
+	friend BigInteger operator *(const BigInteger &a, const BigInteger& b) ;
+	friend BigInteger operator *(const BigInteger &a, const uint32 b) ;
+
+	BigInteger pow(uint32 n) ;
+
+	BigInteger powMod(uint32 n, const BigInteger &mod);
+
+
+};
