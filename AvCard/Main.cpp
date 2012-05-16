@@ -1,8 +1,8 @@
+#pragma once
 #include <iostream>
 #include "CardObject.h"
 #include "RNG.h"
 #include "Timer.h"
-#include "Cert.h"
 #include <ctime>
 
 using namespace std;
@@ -17,7 +17,8 @@ void testTimer(){
 int main(){
 	RNG rng;
 	cout << "Hello world"<<endl;
-	unsigned char * bytes=rng.get(100);
+	byte * bytes= new byte[100];
+	rng.get(bytes,100);
 	for(int i=0;i<100;i++)
 		cout<<(int)bytes[i]<<" ";
 	cout<<endl;
