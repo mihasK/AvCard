@@ -3,52 +3,49 @@
 
 #include "BigInt.h"
 
+
+
+
 typedef enum {
 	NULL_POINT = 0,
 	AFFINE_POINT = 1,
 	PROJECTIVE_POINT = 2
-} POINT_EC_TYPE;
+} PointType;
 
 
-typedef struct {
-	POINT_EC_TYPE   type;    
-	BigInteger	x;       
-	BigInteger	y;      
-} PointECAf, *pPointECAf;
 
-typedef struct {
-	BigInteger    p;   
-	BigInteger    a;   
-	BigInteger    b;   
-	BigInteger q;   
-	PointECAf  G; 
-} ParamEC, *pParamEC;
+class Point {
+private:
+	BigInteger x, y, z;
+	PointType type;
+public: 
+	Point() {
+		this->type = NULL_POINT;		
+	}
+	Point(const BigInteger &x, const BigInteger &y, const BigInteger &z) {
+		this->type = PROJECTIVE_POINT;
+		this->x = x;
+		this->y = y;
+		this->z = z;
+	}
 
+	Point(const BigInteger &x, const BigInteger &y) {
+		this->type = AFFINE_POINT;
+		this->x = x;
+		this->y = y;
+	}
+	
+};
 
-typedef struct {	
-	  POINT_EC_TYPE   type;  
-	BigInteger	x;         
-	BigInteger	y;         
-	BigInteger	z;         
-} PointECPr, *pPointECPr;
+struct ECurveParams {
+	BigInteger a, b, p, q;
+	Point G;
 
-
-EXTERN_C BOOL EC_IsPointAf(pPointECAf P, pParamEC   param);
-
-EXTERN_C void EC_PointPrToAf(pPointECAf R, pPointECPr P, pParamEC ec);
-
-
-EXTERN_C void EC_DoublePointPr(pPointECPr P, pParamEC param);
-
-EXTERN_C void EC_AddPointPrAf(pPointECPr P,pPointECAf Q, pParamEC param);
-
-EXTERN_C void EC_AddPointAf(pPointECAf R, pPointECAf Q1, pPointECAf Q2, pParamEC   param );
-
-EXTERN_C void EC_MultPointAf(pPointECAf P, BigInteger  K, pParamEC   param);
-
-EXTERN_C void EC_AddMultPointAf(pPointECAf R, pPointECAf P1, BigInteger K1, pPointECAf P2, BigInteger K2, pParamEC param);
-
-EXTERN_C BOOL EC_PointAf_koordY(pPointECAf P, pParamEC param);
-
-#endif
-
+	ECurveParams(BigInteger a, BigInteger b, BigInteger p, BigInteger q, Point G) {
+		this->a = a;
+		this->b = b;
+		this->q = q;
+		this->p = p;
+		this->G = G;
+	}
+};
