@@ -38,9 +38,10 @@ public:
 };
 
 struct ECurveParams {
+
 	BigInteger a, b, p, q;
 	Point G;
-
+	ECurveParams() {}
 	ECurveParams(BigInteger a, BigInteger b, BigInteger p, BigInteger q, Point G) {
 		this->a = a;
 		this->b = b;

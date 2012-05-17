@@ -49,7 +49,7 @@ void SMResponser::response1(byte* request, byte* to ){
 
      do{ 
 		 rng->get(myPACEkeyPart,PACE_KEY_EFFICIENT_LENGHT);
-		 memcpy(myPACEkeyPart, (BigInteger(myPACEkeyPart,PACE_KEY_EFFICIENT_LENGHT) % get_q()).getData(),
+		 memcpy(myPACEkeyPart, (BigInteger(myPACEkeyPart,PACE_KEY_EFFICIENT_LENGHT) % bign_curve256v1::getData().q).getData(),
 			 PACE_KEY_EFFICIENT_LENGHT);
 	 } while(myPACEkeyPart[PACE_KEY_EFFICIENT_LENGHT-1]  ==  0);
 

@@ -91,7 +91,7 @@ bool operator >=(const BigInteger &a, const BigInteger &b) {
 	return true;
 }
 
-BigInteger&BigInteger:: operator+=(const BigInteger& another) {
+BigInteger& BigInteger:: operator+=(const BigInteger& another) {
 	int carry = 0;
 	for (size_t at = 0; at < another.length || carry; ++at) {
 		if (at == this->length) ++this->length;
@@ -155,6 +155,74 @@ BigInteger& BigInteger::operator *= (const BigInteger& another) {
 	return *this;
 }
 
+BigInteger& BigInteger::operator>>=(const uint32 &n) {
+	if (n == 0) return *this;
+	int nInts = n >> 5;
+	int nBits = n & 0x1F;
+	uint32 *mag = new uint32 [this->length];
+	memcpy(mag, this->data, this->length * sizeof this->data[0]);
+	int magLen = this->length;
+	memset(this->data, 0, sizeof this->data);
+	if (nInts >= magLen) {
+		this->length = 1;
+		return *this;
+	}
+	if (nBits == 0) {
+		int newMagLen = magLen - nInts;
+		for (int i=0; i<newMagLen; i++)
+			this->data[i] = mag[i];
+		this->length = newMagLen;
+	} else {
+		int newMagLength = 0;
+		int i = 0;
+		int highBits = mag[0] >> nBits;
+		if (highBits != 0) {
+			newMagLength =  magLen - nInts;
+			this->data[i++] = highBits;
+		} else {
+			newMagLength = magLen - nInts -1;
+		}
+
+		int nBits2 = 32 - nBits;
+		int j=0;
+		while (j < magLen - nInts - 1)
+			this->data[i++] = (mag[j++] << nBits2) | (mag[j] >> nBits);
+		this->length = newMagLength;
+	}
+	return *this;
+}
+
+BigInteger& BigInteger::operator<<=(const uint32& n) {
+	if (n == 0) return *this;
+	int nInts = n >> 5;
+	int nBits = n & 0x1F;
+	uint32 *mag = new uint32 [this->length];
+	memcpy(mag, this->data, this->length * sizeof this->data[0]);
+	int magLen = this->length;
+	memset(this->data, 0, sizeof this->data);
+	if (nBits == 0) {
+		this->length = magLen + nInts;
+		for (int i=0; i<magLen; i++)
+			this->data[i] = mag[i];
+	} else {
+		int i = 0;
+		int newMagLength;
+		int nBits2 = 32 - nBits;
+		int highBits = mag[0] >> nBits2;
+		if (highBits != 0) {
+			newMagLength = magLen + nInts + 1;
+			this->data[i++] = highBits;
+		} else {
+			newMagLength = magLen + nInts;
+		}
+		int j=0;
+		while (j < magLen-1)
+			this->data[i++] = mag[j++] << nBits | mag[j] >> nBits2;
+		this->data[i] = mag[j] << nBits;
+		this->length  = newMagLength;
+	}
+	return *this;
+}
 
 
 BigInteger& BigInteger::operator/=(const BigInteger& another) {

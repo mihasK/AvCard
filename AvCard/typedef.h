@@ -12,7 +12,7 @@
 #define EXTERN_C 
 #endif
 #endif
-#ifndef _WINDOWS_
+#ifdef _WINDOWS_
 	typedef unsigned __int64 uint64;
 	typedef __int64 int64;
 #else
