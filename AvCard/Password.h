@@ -5,7 +5,7 @@ class Password :
 {
 public:
 	byte* data;
-	short lenght;
+	short length;
 
 	Password(void);
 	~Password(void);
