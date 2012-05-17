@@ -43,6 +43,7 @@ void SecureMessaging::unwrap(byte* message,int length, byte* to){
 }
 bool SecureMessaging::setTemplate(Password* pwd){
 	this->pwd=pwd;
+	return true;
 }
 void SecureMessaging::response1(byte* request, byte* to ){ 
 	 byte* paceKeyPrototype=new byte[SM_PACE_KEY_PROTOTYPE_SIZE];
@@ -58,7 +59,7 @@ void SecureMessaging::response1(byte* request, byte* to ){
 
      do{ 
 		 rng->get(myPACEkeyPart,SM_PACE_KEYPART_LENGHT);
-		 memcpy(myPACEkeyPart, (BigInteger(myPACEkeyPart,SM_PACE_KEYPART_LENGHT) % get_q()).getData(),
+		 memcpy(myPACEkeyPart, (BigInteger(myPACEkeyPart,SM_PACE_KEYPART_LENGHT) % bign_curve256v1::getData().q).getData(),
 			 SM_PACE_KEYPART_LENGHT);
 	 } while(myPACEkeyPart[SM_PACE_KEYPART_LENGHT-1]  ==  0);
 

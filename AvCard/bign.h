@@ -12,7 +12,7 @@ typedef struct _bign_privkey {
 } bign_privkey;
 
 typedef struct _bign_pubkey {
-	PointECAf Q;
+	Point Q;
 } bign_pubkey;
 
 EXTERN_C BOOL bign_valpubkey(byte *Q);
@@ -31,6 +31,6 @@ EXTERN_C void bign_prng(uint32 n, byte* Sigma, byte *S, byte *to);
 
 EXTERN_C void brng_hmac(byte *Sigma, byte *S, byte *to, uint32 length){};
 
-EXTERN_C BigInteger get_q();
+	//get_q() -> ECurveParams params; params.q - здесь содержится
 
 #endif
