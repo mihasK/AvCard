@@ -26,8 +26,8 @@ protected:
 	byte* keyMain;
 	byte* keyEncr;
 	byte* keyMAC;
-	//32 byte
-	byte* myPACEkeyPart;
+	void refreshSubKey();
+	void rndNumberUnderQ(byte* to);
 public:
 	//[ cmd :< MSE : Set  AT >] 
 	bool setTemplate(Password* pwd);
@@ -36,22 +36,52 @@ public:
 	void update(byte* shift);
 	void wrap(byte* message,int length, byte* to );
 	void unwrap(byte* message,int length, byte* to);
-	SecureMessaging(void);
-	~SecureMessaging(void);
+
+	void deactivate(){
+		CardObject::deactivate();
+		delete[BIGN_POINT_LENGHT] keyMain;
+		delete[BIGN_POINT_LENGHT] keyEncr;
+		delete[BIGN_POINT_LENGHT] keyMAC;
+		delete pwd;
+	}
 };
 
 class SMResponser:public SecureMessaging{
+private:
+	//32 byte
+	byte* myPACEkeyPart;
+public:
 	//[ cmd :< MSE : General    Authenticate >]
     void response1 (byte* request1, byte* to );
 	//[ cmd :< MSE : General    Authenticate >] 
 	void response2 (byte* request2, byte* to);
+	SMResponser(void){
+		myPACEkeyPart=new byte[PACE_KEY_EFFICIENT_LENGHT];
+	}
+	~SMResponser(void){
+		delete[PACE_KEY_EFFICIENT_LENGHT] myPACEkeyPart;
+	}
 }
 
 class SMRequester:public SecureMessaging{
+private:
+	byte* fullPointProto;
+	//for check
+	byte* myPoint;
+public:
 	void request1 (byte* to );
 	//[ cmd :< MSE : General    Authenticate >]
     void request2 (byte* response1, byte* to );
-	//[ cmd :< MSE : General    Authenticate >] 
-	void request3 (byte* response2, byte* to);
+
+	void check(byte* response2);
+	
+	SMRequester(void){
+		fullPointProto=new byte[PACE_GENPOINT_PROTOTYPE_SIZE];
+		myPoint=new byte[BIGN_POINT_LENGHT];
+	}
+	~SMRequester(void){
+		delete[PACE_GENPOINT_PROTOTYPE_SIZE] fullPointProto;
+		delete[BIGN_POINT_LENGHT] myPoint;
+	}
 }
 

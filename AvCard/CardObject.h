@@ -7,8 +7,11 @@ class CardObject
 private:
 	bool active;
 public:
-	void setActive(bool active){
-		this->active=active;
+	virtual void activate(){
+		active=true;
+	}
+	virtual void deactivate(){
+		active=false;
 	}
 	CardObject(void)
 	{
