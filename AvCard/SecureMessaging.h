@@ -6,8 +6,8 @@
 #include "password.h"
 #include "helpers.h"
 
-#define SM_PACE_KEY_PROTOTYPE_SIZE 32
-#define SM_PACE_KEYPART_LENGHT 32
+
+
 
 class SecureMessaging :
 	public CardObject
