@@ -19,6 +19,10 @@ BigInteger::BigInteger() {
 	data[0] = 0;
 }
 
+BigInteger::getLength()  const {
+	return this->length;
+}
+
 
 BigInteger::BigInteger(byte *data, int length) {
 	this->length = 0;
@@ -30,6 +34,7 @@ BigInteger::BigInteger(byte *data, int length) {
 		}
 		++this->length;
 	}		
+	while (this->length > 1 && !this->data[this->length - 1]) --this->length;
 }
 
 BigInteger& BigInteger::operator=(const BigInteger &another) {
