@@ -49,6 +49,9 @@ public:
 	BigInteger& operator*=(const uint32& b) ;
 	BigInteger& operator *= (const BigInteger& another);
 
+	BigInteger& operator<<=(const uint32 &n);
+	BigInteger &operator>>=(const uint32 &n);
+
 
 
 	BigInteger& operator/=(const BigInteger& another);
