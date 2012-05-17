@@ -3,11 +3,10 @@
 class Password :
 		public CardObject
 {
-private:
-	char* data;
+public:
+	byte* data;
 	short lenght;
 
-public:
 	Password(void);
 	~Password(void);
 };

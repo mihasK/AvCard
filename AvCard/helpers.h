@@ -2,7 +2,7 @@
 #define __HELPERS_H_
 #include "point.h"
 
-EXTERN_C void helper_swu(byte *X, uint32 size, pPointECAf P);
+EXTERN_C void swu(byte *X, uint32 size, byte* P){};
 
 
 

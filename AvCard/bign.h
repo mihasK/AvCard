@@ -3,11 +3,12 @@
 
 #include "point.h"
 
+#define BIGN_POINT_LENGHT 64
 #define BIGN_PRIVKEY_LENGHT 32
-#define BIGN_PUBKEY_LENGHT 64
+#define BIGN_PUBKEY_LENGHT BIGN_POINT_LENGHT
 
 typedef struct _bign_privkey {
-	BigInt d;
+	BigInteger d;
 } bign_privkey;
 
 typedef struct _bign_pubkey {
@@ -29,5 +30,7 @@ EXTERN_C void bign_dh(byte *k, uint32 kSize, byte *P, uint32 pSize, byte* to);
 EXTERN_C void bign_prng(uint32 n, byte* Sigma, byte *S, byte *to);
 
 EXTERN_C void brng_hmac(byte *Sigma, byte *S, byte *to, uint32 length){};
+
+EXTERN_C BigInteger get_q();
 
 #endif

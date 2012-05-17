@@ -28,6 +28,9 @@ public:
 
 	BigInteger(byte *data, int length) ;
 
+	byte* getData();
+	int getLength();
+
 	BigInteger& operator=(const BigInteger &another);
 
 
