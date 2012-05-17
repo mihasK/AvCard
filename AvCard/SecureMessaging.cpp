@@ -2,12 +2,6 @@
 #include <cstring>
 
 
-bool checkImito(byte* messageWithImito, int size, byte* key){
-	if(size<=IMITO_LENGTH)
-		throw "wrong message";
-	return checkImito(messageWithImito,size-IMITO_LENGTH, 
-		messageWithImito+size-IMITO_LENGTH,key);
-}
 bool checkImito(byte* message, int size, byte* imito, byte* key){
 	byte* imitoCmp=new byte[IMITO_LENGTH];
 	belt_mac(message, size, key, imitoCmp);
@@ -15,6 +9,14 @@ bool checkImito(byte* message, int size, byte* imito, byte* key){
 	delete[IMITO_LENGTH] imitoCmp;
 	return cmp==0 ? true : false;
 }
+
+bool checkImito(byte* messageWithImito, int size, byte* key){
+	if(size<=IMITO_LENGTH)
+		throw "wrong message";
+	return checkImito(messageWithImito,size-IMITO_LENGTH, 
+		messageWithImito+size-IMITO_LENGTH,key);
+}
+
 void SecureMessaging:: refreshSubKey(){
 	belt_keyrep(keyMain, 0, keyEncr);
 	belt_keyrep(keyMain, 1, keyMAC);

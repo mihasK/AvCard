@@ -61,7 +61,7 @@ public:
 	~SMResponser(void){
 		delete[PACE_KEY_EFFICIENT_LENGHT] myPACEkeyPart;
 	}
-}
+};
 
 class SMRequester:public SecureMessaging{
 private:
@@ -83,5 +83,5 @@ public:
 		delete[PACE_GENPOINT_PROTOTYPE_SIZE] fullPointProto;
 		delete[BIGN_POINT_LENGHT] myPoint;
 	}
-}
+};
 
