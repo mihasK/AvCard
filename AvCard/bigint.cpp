@@ -19,7 +19,7 @@ BigInteger::BigInteger() {
 	data[0] = 0;
 }
 
-BigInteger::getLength()  const {
+int BigInteger ::getLength() const{
 	return this->length;
 }
 

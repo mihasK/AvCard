@@ -49,3 +49,6 @@ struct ECurveParams {
 		this->G = G;
 	}
 };
+
+
+#endif
