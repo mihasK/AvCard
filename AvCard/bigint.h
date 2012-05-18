@@ -4,29 +4,26 @@
 #include <cstring>
 #include "typedef.h"
 
-#define MAX_LEN 64
+#define MAX_LEN 16
 #define MAX_VALUE ((1ULL << 32) - 1)
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
 class BigInteger {
-private:
+public:
 	size_t length;
 	uint32 data[1 + MAX_LEN];
 
 
 	void LevelUp();
+	bool getBit(const uint32 &at) const;
 
 public:
 	BigInteger();
 
-
+	void reduce(uint32 t) {
+		for (; t < length; ++t) this->data[t] = 0U;
+	}
 	BigInteger(byte *data, int length) ;
+	BigInteger(uint32 t);
 
 	byte* getData() const;
 	int getLength() const;

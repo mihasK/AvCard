@@ -1,6 +1,10 @@
 #include "BigInt.h"
+#include "helpers.h"
 
-
+bool BigInteger::getBit(const uint32 &at) {
+		uint32 _at = getSize(at), _$ = getIndex(at);
+		return (this->data[_at] & (1U << _$)) != 0U;
+	}
 
 void BigInteger::LevelUp()
 {
@@ -9,6 +13,10 @@ void BigInteger::LevelUp()
 	if (data[length]) ++length;
 }
 
+BigInteger::BigInteger(uint32 t) {
+	this->length = 1;
+	this->data[0] = t;
+}
 
 BigInteger::BigInteger() {
 	static int once = 0;
@@ -278,9 +286,9 @@ BigInteger operator+(const BigInteger &a, const BigInteger& b) {
 }
 
 BigInteger operator-(const BigInteger &a, const BigInteger& b) {
-	BigInteger ret = a;
-	ret -= b;
-	return ret;
+		BigInteger ret = a;
+		ret -= b;
+		return ret;
 }
 
 BigInteger operator *(const BigInteger &a, const BigInteger& b) {
