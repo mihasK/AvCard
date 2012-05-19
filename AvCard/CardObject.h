@@ -1,6 +1,6 @@
 #pragma once
 
-#include "typedef.h";
+#include "typedef.h"
 
 class CardObject
 {
