@@ -6,11 +6,16 @@
 #include <ctime>
 #include "tests.h"
 
+
 using namespace std;
 
 
 int main(){
-	cout << "Hello world"<<endl;
-	testRNG();
-	testTimer();
+	tests::belt_test();
+	tests::testRNG();
+	tests::testTimer();
+	tests::testPACE();
+	return 0;
+
+
 }

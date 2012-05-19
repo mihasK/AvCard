@@ -43,6 +43,7 @@ void SecureMessaging::unwrap(byte* message,int length, byte* to){
 }
 bool SecureMessaging::setTemplate(Password* pwd){
 	this->pwd=pwd;
+	return true;
 }
 // encr(prototype) <- ...
 void SMRequester::request1(){
@@ -52,9 +53,10 @@ void SMRequester::request1(){
 	byte* key= new byte[BELT_HASH_LENGHT];
 	belt_hash (pwd -> data,pwd->length, key);
 	//encr(prototype) >>
-	belt_ecb_ecnr (fullPointProto, PACE_REQUEST_1_SIZE, key, to); 
+	belt_ecb_encr (fullPointProto, PACE_REQUEST_1_SIZE, key, to); 
 	send(to, PACE_REQUEST_1_SIZE);
 
+	belt_ecb_encr (fullPointProto, PACE_REQUEST_1_SIZE, key, to); 
 	delete[BELT_HASH_LENGHT] key;
 	delete[PACE_REQUEST_1_SIZE] to;
 }

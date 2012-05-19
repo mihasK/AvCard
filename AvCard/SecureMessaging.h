@@ -5,8 +5,8 @@
 #include "rng.h"
 #include "password.h"
 #include "helpers.h"
-#include "constants.h"
 #include "ProtocolAgent.h"
+#include "point.h"
 
 #define SM_KEY_SHIFT_LENGTH			BELT_KEY_LENGHT
 #define SYNCHRO_LENGTH				BELT_SYNCHRO_LENGHT
