@@ -20,7 +20,8 @@
 
 
 class SecureMessaging :
-	public CardObject, ProtocolAgent
+	public CardObject, 
+	public ProtocolAgent
 {
 protected:
 	Password* pwd;
@@ -29,10 +30,11 @@ protected:
 	byte* keyMain;
 	byte* keyEncr;
 	byte* keyMAC;
-	byte* keyCandidate;
+	int paceStep;
 	void refreshKeys();
 	void refreshSubKey();
 	void rndNumberUnderQ(byte* to);
+
 public:
 	string getProtocolName(){
 		return "SM";
@@ -52,19 +54,18 @@ public:
 		delete[BIGN_POINT_LENGHT] keyMAC;
 		delete pwd;
 	}
-	void send(byte* message, int size){};
-	void receive(byte* message, int size){};
+	
+	
 	SecureMessaging(){
+		paceStep=0;
 		byte* keyMain=new byte[BIGN_POINT_LENGHT];
 		byte* keyEncr=new byte[BIGN_POINT_LENGHT];
 		byte* keyMAC=new byte[BIGN_POINT_LENGHT];
-		byte* keyCandidate=new byte[BIGN_POINT_LENGHT];
 	}
 	~SecureMessaging(){
 		delete[BIGN_POINT_LENGHT] keyMain;
 		delete[BIGN_POINT_LENGHT] keyEncr;
 		delete[BIGN_POINT_LENGHT] keyMAC;
-		delete[BIGN_POINT_LENGHT] keyCandidate;
 
 	}
 };
@@ -74,13 +75,37 @@ private:
 	//32 byte
 	byte* myPACEkeyPart;
 
-	
-public:
 	//[ cmd :< MSE : General    Authenticate >]
     void response1 (byte* request1);
 	//[ cmd :< MSE : General    Authenticate >] 
 	void response2 (byte* request2);
+	
+	
+
+public:
+	void receive(byte* message, int size){
+		try{
+			switch(paceStep){
+				case 0:
+					if(size!=PACE_REQUEST_1_SIZE)
+						throw exception("pace packet error");
+					response1(message);
+		
+					break;
+				case 1:
+					if(size!=PACE_REQUEST_2_SIZE)
+						throw exception("pace packet error");
+					response2(message);
+					break;
+			}
+			paceStep++;
+		}catch(exception ex){
+			deactivate();
+			paceStep=0;
+		}
+	}
 	SMResponser(void){
+		paceStep=0;
 		myPACEkeyPart=new byte[PACE_KEY_EFFICIENT_LENGHT];
 		
 	}
@@ -96,18 +121,41 @@ private:
 	//for check
 	byte* myPoint;
 
-	
-public:
 	void request1 ();
 	//[ cmd :< MSE : General    Authenticate >]
     void request2 (byte* response1);
 
 	void check(byte* response2);
-	
+
+public:
+	void initiate(){
+		request1();
+		paceStep=1;
+	}
+	void receive(byte* message, int size){
+		try{
+			switch(paceStep){
+				case 1:
+					if(size!=PACE_RESPONSE_1_SIZE)
+						throw exception("pace packet error");
+					request2(message);
+					break;
+				case 2:
+					if(size!=PACE_RESPONSE_2_SIZE)
+						throw exception("pace packet error");
+					check(message);
+					break;
+			}
+			paceStep++;
+		}catch(exception ex){
+			deactivate();
+			paceStep=0;
+		}
+	}
+
 	SMRequester(void){
 		fullPointProto=new byte[PACE_GENPOINT_PROTOTYPE_SIZE];
 		myPoint=new byte[BIGN_POINT_LENGHT];
-		keyCandidate=new byte[BIGN_POINT_LENGHT];
 	}
 	~SMRequester(void){
 		delete[PACE_GENPOINT_PROTOTYPE_SIZE] fullPointProto;

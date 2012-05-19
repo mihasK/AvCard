@@ -3,11 +3,24 @@
 #include <string>
 #include <fstream>
 #include <cassert>
+#include "SecureMessaging.h"
+#include "NetEmul.h"
 using namespace std;
 
 namespace tests {
 	void testPACE(){
-
+		SMRequester requester;
+		SMResponser responser;
+		RightNetAgent rAgent;
+		LeftNetAgent lAgent;
+		requester.setFather(&rAgent);
+		responser.setFather(&lAgent);
+		
+		requester.initiate();
+		lAgent.receive();
+		rAgent.receive();
+		lAgent.receive();
+		rAgent.receive();
 	}
 	void testTimer(){
 		Timer timer=Timer();
