@@ -1,5 +1,4 @@
-#ifndef __TYPEDEF_H_ 
-#define __TYPEDEF_H_ 
+#pragma once
 
 #if _MSC_VER > 1000
 #pragma once
@@ -49,4 +48,4 @@ typedef int	BOOL;
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
-#endif 
+ 

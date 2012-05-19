@@ -1,10 +1,8 @@
-#ifndef __BIGINT_H_
-#define __BIGINT_H_
+#pragma once
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include "typedef.h"
-
 #define MAX_LEN 16
 #define MAX_VALUE ((1ULL << 32) - 1)
 
@@ -26,7 +24,7 @@ public:
 	BigInteger(byte *data, int length) ;
 	BigInteger(uint32 t);
 
-	byte* getData() const;
+	byte* getData() const {return NULL;}
 	int getLength() const;
 
 	BigInteger& operator=(const BigInteger &another);
@@ -79,4 +77,3 @@ public:
 
 };
 
-#endif

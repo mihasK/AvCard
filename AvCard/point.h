@@ -1,6 +1,4 @@
-#ifndef __POINT_H_
-#define __POINT_H_
-
+#pragma once
 #include "BigInt.h"
 
 typedef enum {
@@ -25,7 +23,7 @@ struct ECurveParams {
 class bign_curve256v1 : public ECurveParams {
 
 public:
-	static bign_curve256v1& const getData()  {
+	static bign_curve256v1  getData()   {
 		static bool was_init = false;
 		static bign_curve256v1 instance;
 		if (!was_init) {
@@ -41,8 +39,6 @@ private:
 	bign_curve256v1() {}
 	bign_curve256v1(bign_curve256v1&) {}
 	bign_curve256v1& operator=(bign_curve256v1&) {}
-	~bign_curve256v1() {}
-
 };
 
 struct PointProj {
@@ -113,4 +109,3 @@ public:
 
 
 
-#endif

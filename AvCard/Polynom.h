@@ -1,7 +1,10 @@
+#ifndef __POLYNOM_H_
+#define __POLYNOM_H_
 #include "typedef.h"
 #include <cstdlib>
 #include <cstring>
 #include "helpers.h"
+#pragma once
 #define POLY_MAX_LEN 4
 #define MAX_VALUE_32 (((1ULL) << 32) - 1)
 static uint16 table[1 << 8][1 << 8];
@@ -140,3 +143,5 @@ public:
 		memcpy(this->data, C, sizeof this->data);
 	}
 };
+
+#endif

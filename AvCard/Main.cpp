@@ -4,6 +4,8 @@
 #include "RNG.h"
 #include "Timer.h"
 #include <ctime>
+#include "tests.h"
+
 
 using namespace std;
 
@@ -15,7 +17,7 @@ void testTimer(){
 }
 
 int main(){
-	RNG rng;
+	/*RNG rng;
 	cout << "Hello world"<<endl;
 	byte * bytes= new byte[100];
 	rng.get(bytes,100);
@@ -23,8 +25,10 @@ int main(){
 		cout<<(int)bytes[i]<<" ";
 	cout<<endl;
 	system("PAUSE");
-	delete[] bytes;
-	testTimer();
+	delete[] bytes;*/
+	tests::belt_test();
+	//testTimer();
+	return 0;
 
 	
 }
