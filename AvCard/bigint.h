@@ -49,6 +49,11 @@ public:
 
 	BigInteger& operator<<=(const uint32 &n);
 	BigInteger &operator>>=(const uint32 &n);
+	friend BigInteger operator <<(const BigInteger &a, const uint32 &n) {
+		BigInteger ret = a;
+		ret <<= 1;
+		return ret;
+	}
 
 
 

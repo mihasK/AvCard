@@ -237,7 +237,7 @@ EXTERN_C void belt_hash_step(byte* XX, uint32 cur_len, byte *&STATE, byte *to = 
 	uint32 s[4];
 	memset(s, 0, sizeof s);
 	uint32 act_sz = 8;
-	uint32 h[8] = {0xB194BAC8, 0x0A08F53B, 0x366D008E, 0x584A5DE4, 0x8504FA9D, 0x1BB6C7AC, 0x252E72C2,0x02FDCE0D};	
+	uint32 h[8] = {0x0DCEFD02, 0xC2722E25, 0xACC7B61B, 0x9DFA0485, 0xE45D4A58, 0x8E006D36, 0x3BF5080A,0xC8BA94B1};	
 	if (cur_len == 0) {
 		memcpy(STATE + 16, s, sizeof s);
 		memcpy(STATE + 16 + sizeof s, h, sizeof h);
@@ -288,7 +288,7 @@ EXTERN_C void belt_keyrep(byte *X, byte b, byte *to) {
 	byte I[16];
 	memset(I, 0, sizeof I);
 	I[0] = b;
-	uint32 r = 0xF33C657B;
+	uint32 r = 0x7B653CF3;
 	uint32 preY[16];
 	preY[0] = r;
 	memcpy(preY + 1, D, sizeof D);
