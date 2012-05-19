@@ -31,6 +31,7 @@ void SecureMessaging::wrap(byte* message,int length, byte* to){
 	rng->get(to, SYNCHRO_LENGTH);
 	belt_ctr(message, length, keyEncr,to, to+SYNCHRO_LENGTH);
 	belt_mac(to, length+SYNCHRO_LENGTH, keyMAC, to+SYNCHRO_LENGTH+length);
+	
 }
 void SecureMessaging::unwrap(byte* message,int length, byte* to){
 	if(length< IMITO_LENGTH+SYNCHRO_LENGTH)
@@ -44,18 +45,23 @@ bool SecureMessaging::setTemplate(Password* pwd){
 	this->pwd=pwd;
 }
 // encr(prototype) <- ...
-void SMRequester::request1(byte* to){
+void SMRequester::request1(){
+	byte* to = new byte[PACE_REQUEST_1_SIZE];
 	byte* fullPointProto=new byte[PACE_GENPOINT_PROTOTYPE_SIZE];
 	rng->get(fullPointProto,PACE_GENPOINT_PROTOTYPE_SIZE/2);
 	byte* key= new byte[BELT_HASH_LENGHT];
 	belt_hash (pwd -> data,pwd->length, key);
 	//encr(prototype) >>
 	belt_ecb_ecnr (fullPointProto, PACE_REQUEST_1_SIZE, key, to); 
+	send(to, PACE_REQUEST_1_SIZE);
+
 	delete[BELT_HASH_LENGHT] key;
+	delete[PACE_REQUEST_1_SIZE] to;
 }
 
 //	prototype||pubPoint <- 	...	<-	encr(prototype)
-void SMResponser::response1(byte* request, byte* to ){ 
+void SMResponser::response1(byte* request){ 
+	 byte* to = new byte[PACE_RESPONSE_1_SIZE];
 	 byte* fullPointProto=new byte[PACE_GENPOINT_PROTOTYPE_SIZE];
 	 byte* key= new byte[BELT_HASH_LENGHT];
 	 belt_hash (pwd -> data,pwd->length, key);
@@ -73,14 +79,17 @@ void SMResponser::response1(byte* request, byte* to ){
 
 	 //pubPoint>>
 	 bign_dh (myPACEkeyPart,PACE_KEY_EFFICIENT_LENGHT, point, to+PACE_KEY_EFFICIENT_LENGHT/2); 
+	 send(to, PACE_RESPONSE_1_SIZE);
 
+	 delete[PACE_RESPONSE_1_SIZE] to;
 	 delete[BELT_HASH_LENGHT] key;
 	 delete[PACE_GENPOINT_PROTOTYPE_SIZE] fullPointProto;
 	 delete[BIGN_POINT_LENGHT] point;
 }
 
 	// pubPoint||imito  ... <- prototype||pubPoint
-void SMRequester::request2(byte* response, byte* to){
+void SMRequester::request2(byte* response){
+	byte* to = new byte[PACE_REQUEST_2_SIZE];
 	byte * extPoint = response+PACE_GENPOINT_PROTOTYPE_SIZE/2;
 	if  (!bign_valpubkey (extPoint))      { 
         //pwd -> dec_rc (); 
@@ -92,38 +101,46 @@ void SMRequester::request2(byte* response, byte* to){
 	swu(fullPointProto,PACE_GENPOINT_PROTOTYPE_SIZE, point);
 	byte* myPointEfficient=new byte[PACE_KEY_EFFICIENT_LENGHT];
 	rndNumberUnderQ(myPointEfficient);
+
 	//pubPoint>>
 	bign_dh (myPointEfficient,PACE_KEY_EFFICIENT_LENGHT, point, to); 
 	
-	//common point
+	//imito>>
+	belt_mac(to, BIGN_POINT_LENGHT, keyMAC, to+BIGN_POINT_LENGHT);
+	send(to, PACE_REQUEST_2_SIZE);
+
+	//common point is a new keyMain
 	bign_dh (myPointEfficient, PACE_KEY_EFFICIENT_LENGHT, extPoint, keyMain);
 	refreshSubKey();
 
-	//imito>>
-	belt_mac(to, BIGN_POINT_LENGHT, keyMAC, to+BIGN_POINT_LENGHT);
-
 	delete[BIGN_POINT_LENGHT] point;
 	delete[PACE_KEY_EFFICIENT_LENGHT] fullPointProto;
+	delete[PACE_REQUEST_2_SIZE] to;
 }
 
 //	imito	<-		...  <-  pubPoint||imito
-void SMResponser::response2(byte* request, byte* to) { 
+void SMResponser::response2(byte* request) { 
+	byte* to = new byte[PACE_RESPONSE_2_SIZE];
 	if(!checkImito(request, PACE_REQUEST_2_SIZE,keyMAC))
 		throw "imito not match";
 	byte * extPoint = request;
 	if  (!bign_valpubkey (extPoint))      { 
         //pwd -> dec_rc (); 
-        throw "is not a valid public key"; 
-     }
+		throw "is not a valid public key"; 
+    }
+
+	//imito>>
+	belt_mac(extPoint, BIGN_POINT_LENGHT, keyMAC, to);
+	
 
 	//common point
 	bign_dh (myPACEkeyPart, PACE_KEY_EFFICIENT_LENGHT, extPoint, keyMain); 
     refreshSubKey();
 
-	//imito>>
-	belt_mac(extPoint, BIGN_POINT_LENGHT, keyMAC, to);
+	send(to, PACE_RESPONSE_2_SIZE);
 
 	activate();
+	delete[PACE_RESPONSE_2_SIZE] to;
 }
 //				..?	<-	imito
 void SMRequester::check(byte* response){
