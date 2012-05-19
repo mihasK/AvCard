@@ -1,10 +1,9 @@
 #include "BigInt.h"
 #include "helpers.h"
 
-bool BigInteger::getBit(const uint32 &at) {
-		uint32 _at = getSize(at), _$ = getIndex(at);
-		return (this->data[_at] & (1U << _$)) != 0U;
-	}
+bool BigInteger::getBit(const uint32 &at) const {
+		 return ::getBit(this->data, at);
+}
 
 void BigInteger::LevelUp()
 {
@@ -19,7 +18,7 @@ BigInteger::BigInteger(uint32 t) {
 }
 
 BigInteger::BigInteger() {
-	static int once = 0;
+	int once = 0;
 	if (!once) {
 		once = 1;
 	}

@@ -1,4 +1,5 @@
-
+#ifndef __BIGINT_H_
+#define __BIGINT_H_
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -72,3 +73,5 @@ public:
 
 
 };
+
+#endif

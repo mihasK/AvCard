@@ -18,19 +18,7 @@ class Polynom {
 		while (this->degree >= 0 && !getBit(this->degree)) --this->degree;
 	}
 
-	bool getBit(uint32 * data, const uint32 &at) {
-		uint32 _at = getSize(at), _$ = getIndex(at);
-		return (data[_at] & (1U << _$)) != 0U;
-	}
-	void setBit(uint32 * data, const uint32& at, const bool val = TRUE) {
-		uint32 _at = getSize(at),
-			_val = val ? (1U << getIndex(at)) : ~(1U<<getIndex(at));
-		data[_at] &= _val;
-	}
-	void toggleBit(uint32 * data, const uint32& at) {
-		bool val = getBit(data, at);
-		setBit(data, at, !val);
-	}
+	
 
 	template<uint32 N> void mul_table(const uint32* a, const uint32* b, uint32* c) {
 		byte *A = (byte*)a;
@@ -95,13 +83,13 @@ class Polynom {
 	uint32 mul_total(uint32 *A, uint32 *B, uint32 * C) {
 		doMul<4>(A, B, C);
 		uint32 _at = 255;
-		while (!getBit(C, _at)) --_at;
+		while (!::getBit(C, _at)) --_at;
 		for (; _at > 127; --_at) {
-			if (getBit(C, _at)) {
+			if (::getBit(C, _at)) {
 				reduce(C, _at);
 			}
 		}
-		while (_at >= 0 && !getBit(C, _at)) --_at;
+		while (_at >= 0 && !::getBit(C, _at)) --_at;
 		return _at;
 	}
 
@@ -124,11 +112,11 @@ public:
 	}
 
 	bool getBit(const uint32 &at) {
-		return getBit(this->data, at);
+		return ::getBit(this->data, at);
 	}
 
 	void setBit(const uint32& at, const bool val = TRUE) {
-		setBit(this->data, at, val);
+		::setBit(this->data, at, val);
 	}
 
 	Polynom& operator+=(const Polynom &another) {

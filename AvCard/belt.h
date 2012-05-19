@@ -1,6 +1,7 @@
 #ifndef __BELT_H
 #define __BELT_H
 #include "typedef.h"
+#include "bigint.h"
 
 #define BELT_MAC_LENGHT 8
 #define BELT_SYNCHRO_LENGHT 16
@@ -8,6 +9,26 @@
 #define BELT_KEY_LENGHT 32
 
 static const byte H[1 << 8];
+
+void phi1(uint32* u) {
+	uint32 t = u[0]^u[1];
+	for (size_t i = 2; i >=0; --i) u[i] = u[i + 1];
+	u[3] = t;
+}
+
+void phi2(uint32* u) {
+	uint32 t = u[0]^u[3];
+	for (size_t i = 1; i <= 3; ++i) u[i] = u[i - 1];
+	u[0] = t;
+}
+void psi(uint32* u, uint32 at) {
+	if (at  < 4) {
+		u[at] =(1U) << 31;
+	}
+}
+
+
+
 
 template<int R> uint32 RotHi(uint32 u) {
 	return (u << R) | (u >> (32 - R));
@@ -162,13 +183,121 @@ EXTERN_C void belt_ctr(byte *XX, uint32 size, byte *Sigma, byte *S, byte *to){
 	delete Y;
 }
 
-EXTERN_C void belt_mac(byte *X, uint32 size, byte *Sigma, byte *to);
+EXTERN_C void belt_mac(byte *XX, uint32 size, byte *Sigma, byte *to) {
+	uint32* sigma = (uint32*)sigma;
+	uint32 act_sz = ((size - 1) / 16 + 1) * 4;
+	uint32 *X = new uint32[act_sz];
+	uint32 *Y = new uint32[act_sz];
+	uint32 byteSZ = act_sz << 2;
+	memcpy(X, XX, size);
+	uint32 s[4], r[4];
+	memset(s, 0, sizeof s);
+	encrypt_block(s, r, sigma);
 
-EXTERN_C void belt_hash(byte *X, uint32 size, byte *to);
+	for (size_t i = 0; i < act_sz - 4; i += 4) {
+		for (size_t j = 0; j < 4; ++j) X[i + j] ^= s[j];
+		encrypt_block(X + i, s, sigma);
+	}
+	uint32 diff = byteSZ - size;
+	if (!diff) {
+		phi1(r);
+		for (size_t i = 0; i < 4; ++i) s[i] ^= r[i] ^ X[act_sz - 4 + i];
+	} else {
+		psi(X + act_sz - 4, 4 - diff);
+		phi2(r);
+		for (size_t i = 0; i < 4; ++i) s[i] ^= r[i] ^ X[act_sz - 4 + i];
+	}
+	encrypt_block(s, r, sigma);
+	memcpy(to, r, 8);
+	delete X;
+	delete Y;
+}
 
-EXTERN_C void belt_hash_step(byte *X, byte *S, byte *to);
+void sigma1(uint32 *U, uint32 *u){
+	uint32 u34[4];
+	for (size_t i =0; i < 4; ++i) u34[i] = U[8 + i] ^ U[12 + i];
+	encrypt_block(u34, u, U);
+	for (size_t i = 0; i < 4; ++i) u[i] ^= u34[i];
+}
 
-EXTERN_C void belt_keyrep(byte *X, byte b, byte *to);
+void sigma2(uint32 * U, uint32 *u) {
+	uint32 SIGMA1[8], SIGMA2[8];
+	sigma1(U, SIGMA1);
+	for (size_t i = 0; i < 4; ++i) SIGMA1[4 + i] = U[12 + i];
+	sigma1(U, SIGMA2);
+	for (size_t i = 0; i < 4; ++i) SIGMA2[4 + i] = U[8 + i], SIGMA2[i] ^= (uint32)(((1ULL)<<32) - 1);
+	encrypt_block(U, u, SIGMA1);
+	for (size_t i = 0; i < 4; ++i) u[i] ^= U[i];
+	encrypt_block(U + 4, u + 4, SIGMA2);
+	for (size_t i = 0; i < 4; ++i) u[4 + i] ^= U[4 + i];
+}
+
+
+EXTERN_C void belt_hash_step(byte* XX, uint32 cur_len, byte *&STATE, byte *to = NULL) {
+	uint32 s[4];
+	memset(s, 0, sizeof s);
+	uint32 act_sz = 8;
+	uint32 h[8] = {0xB194BAC8, 0x0A08F53B, 0x366D008E, 0x584A5DE4, 0x8504FA9D, 0x1BB6C7AC, 0x252E72C2,0x02FDCE0D};	
+	if (cur_len == 0) {
+		memcpy(STATE + 16, s, sizeof s);
+		memcpy(STATE + 16 + sizeof s, h, sizeof h);
+		memset(STATE + 16, 0, 16);
+		return;
+	} else {
+		if (XX == NULL) {
+			uint32 tmp3[8];
+			sigma2((uint32*)STATE, tmp3);
+			memcpy(to, tmp3, 32);
+			return;
+		}
+		uint32 *X = new uint32[act_sz];
+		uint32 byteSZ = act_sz << 2;
+		memcpy(X, XX, cur_len);
+		uint32 tmp1[4], tmp2[8], tmp3[16];
+		memcpy(s, STATE + 16, sizeof s);
+		memcpy(h, STATE + sizeof s + 16, sizeof h);
+		uint64 X_LEN;
+		memcpy(&X_LEN, STATE + 8, 8);
+		X_LEN += cur_len;
+		for (size_t j = 0; j < 8; ++j) tmp3[j] = X[j], tmp3[8 + j] = h[j];
+		sigma1(tmp3, tmp1);
+		for (size_t j = 0; j < 4; ++j) s[j] ^= tmp1[j];
+		sigma2(tmp3, h);
+		memcpy(STATE + 16, s, sizeof s);
+		memcpy(STATE + 16 + sizeof s, h, sizeof h);
+		memcpy(STATE + 8, &X_LEN, 8);
+	}
+}
+
+EXTERN_C void belt_hash(byte *XX, uint32 size, byte *to) {
+	belt_hash_step(XX, 0, to);
+	uint32 actSIZE = 0;
+	while (actSIZE + 8 < size) {
+		belt_hash_step(XX + actSIZE, 8, to);
+		actSIZE += 8;
+	}
+	size-=actSIZE;
+	belt_hash_step(XX + actSIZE, size, to, to);
+	belt_hash_step(NULL, 0, to);
+}
+
+EXTERN_C void belt_keyrep(byte *X, byte b, byte *to) {
+	uint32 n = 256, m = 256;
+	byte D[12];
+	memset(D, 0, sizeof D);
+	byte I[16];
+	memset(I, 0, sizeof I);
+	I[0] = b;
+	uint32 r = 0xF33C657B;
+	uint32 preY[16];
+	preY[0] = r;
+	memcpy(preY + 1, D, sizeof D);
+	memcpy(preY + 4, I, sizeof I);
+	memcpy(preY + 8, X, 32);
+	uint32 Y[8];
+	sigma2(preY, Y);
+	memcpy(to, Y, sizeof Y);
+}
 
 
 
