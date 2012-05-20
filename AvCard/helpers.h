@@ -23,3 +23,14 @@ static 	 void toggleBit(uint32 * data, const uint32& at) {
 		setBit(data, at, !val);
 	}
 
+static void change_endian(byte *X) {
+	byte*l = X, 
+			*r = X + 3;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = X + 1, 
+			r = X + 2;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+
+}

@@ -30,12 +30,23 @@ int BigInteger ::getLength() const{
 	return this->length;
 }
 
+byte *BigInteger::getData() const {
+	byte *ret = new byte[MAX_LEN << 2];
+	for (size_t at = 0; at < MAX_LEN; ++at) {
+		uint32 t = this->data[at];
+		byte *q = (byte*)&t;
+		change_endian(q);
+		for (size_t jj = 0; jj < 4; ++jj) ret[(at << 2) + jj] = q[jj];
+	}
+	return ret;
+}
+
 
 BigInteger::BigInteger(byte *data, int length) {
 	this->length = 0;
 	memset(this->data, 0, sizeof this->data);
-	for (int at = length - 1; at >= 0; at -= 4) {
-		for (int j = max(0, at - 3); j <= at; ++j) {
+	for (int at = 0; at < length; at += 4) {
+		for (int j = at; j < min(at + 4, length); ++j) {
 			this->data[this->length] <<= (sizeof byte) << 3;
 			this->data[this->length] |= data[j];
 		}

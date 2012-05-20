@@ -3,12 +3,15 @@
 #include <string>
 #include <fstream>
 #include <cassert>
+#include <sstream>
 using namespace std;
 
 namespace tests {
 
 	static void output_correct_bytes(string &bytes, string file, string name) {
+
 		ofstream fout(file);
+
 		assert(bytes.length() % 2 == 0);
 		fout << "byte " << name << "[] = {\n";
 		for (int i = 0; i < bytes.length(); i += 2) {
@@ -33,11 +36,44 @@ namespace tests {
 			0x6D,
 			0x00,
 			0x8E,
-			0x58,
+			0x58 };
+			/*
 			0x4A,
 			0x5D,
-			0xE4
-		};
+			0xE4,
+			0x85,
+			0x04,
+			0xFA,
+			0x9D,
+			0x1B,
+			0xB6,
+			0xC7,
+			0xAC,
+			0x25,
+			0x2E,
+			0x72,
+			0xC2,
+			0x02,
+			0xFD,
+			0xCE,
+			0x0D,
+			0x5B,
+			0xE3,
+			0xD6,
+			0x12,
+			0x17,
+			0xB9,
+			0x61,
+			0x81,
+			0xFE,
+			0x67,
+			0x86,
+			0xAD,
+			0x71,
+			0x6B,
+			0x89,
+			0x0B
+		};*/
 
 		byte SIGMA[] = {
 			0xE9,
@@ -71,37 +107,33 @@ namespace tests {
 			0x03,
 			0xA9,
 			0x8B,
-			0xF6
+			0xF6,
+		};
+		byte s[]= {
+			0xBE,
+			0x32,
+			0x97,
+			0x13,
+			0x43,
+			0xFC,
+			0x9A,
+			0x48,
+			0xA0,
+			0x2A,
+			0x88,
+			0x5F,
+			0x19,
+			0x4B,
+			0x09,
+			0xA1		
 		};
 
-		byte Y[] = {
-			0x69,
-			0xCC,
-			0xA1,
-			0xC9,
-			0x35,
-			0x57,
-			0xC9,
-			0xE3,
-			0xD6,
-			0x6B,
-			0xC3,
-			0xE0,
-			0xFA,
-			0x88,
-			0xFA,
-			0x6E
-		};
-		uint32 size = sizeof X;
+				uint32 size = sizeof X;
 		byte *my_y = new byte[size];
-		belt_ecb_encr(X, size, SIGMA, my_y);
-		for (int i = 0; i < size; ++i) assert(Y[i] == my_y[i]);
-		byte *my_x = new byte[size];
-		belt_ecb_decr(Y, size, SIGMA, my_x);
-		for (int i = 0; i < size; ++i) assert(X[i] == my_x[i]);
-		byte x_hash[] = {0xB1,0x94,0xBA,0xC8 ,0x0A,0x08,0xF5,0x3B ,0x36,0x6D,0x00 ,0x8E ,0x58};
-		byte y_hash[512];
-		belt_hash(x_hash, sizeof x_hash, y_hash);
+		belt_mac(X, size, SIGMA, my_y);
+		//for (int i = 0; i < size; ++i) assert(X[i] == my_x[i]);
+		byte *sigma2 = new byte[sizeof SIGMA];
+		belt_keyrep(SIGMA, 0x23, sigma2);
 		uint32 t = 0;
 		t <<= 4;
 		uint32 q = t + 2;
