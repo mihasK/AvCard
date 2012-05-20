@@ -5,6 +5,8 @@
 #include <cassert>
 #include "SecureMessaging.h"
 #include "NetEmul.h"
+#include "Timer.h"
+#include "RNG.h"
 using namespace std;
 
 namespace tests {
