@@ -1,6 +1,6 @@
 #include "SecureMessaging.h"
 #include <cstring>
-
+ 
 
 bool checkImito(byte* message, int size, byte* imito, byte* key){
 	byte* imitoCmp=new byte[IMITO_LENGTH];
