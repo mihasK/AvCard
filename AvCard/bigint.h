@@ -24,7 +24,7 @@ public:
 	BigInteger(byte *data, int length) ;
 	BigInteger(uint32 t);
 
-	byte* getData() const {return NULL;}
+	byte* getData() const ;
 	int getLength() const;
 
 	BigInteger& operator=(const BigInteger &another);

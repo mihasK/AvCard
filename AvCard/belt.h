@@ -1,6 +1,6 @@
 #pragma once
 #include "bigint.h"
-
+#include "helpers.h"
 #define BELT_MAC_LENGHT 8
 #define BELT_SYNCHRO_LENGHT 16
 #define BELT_HASH_LENGHT 32
@@ -35,23 +35,14 @@ static void phi2(uint32* u) {
 	u[0] = t;
 }
 static void psi(uint32* u, uint32 at) {
-	if (at  < 4) {
-		u[at] =(1U) << 31;
-	}
+	uint32 _=at>>2;
+	uint32 __=at&3;
+	__=(3-__)&3;
+	*(((byte*)(u+_))+__)=0x80;
 }
 
 
-static void change_endian(byte *X) {
-	byte*l = X, 
-			*r = X + 3;
 
-		*r ^= *l, *l ^= *r, *r ^= *l;
-		l = X + 1, 
-			r = X + 2;
-
-		*r ^= *l, *l ^= *r, *r ^= *l;
-
-}
 
 template<int R> uint32 RotHi(uint32 u) {
 	return (u << R) | (u >> (32 - R));
@@ -190,8 +181,15 @@ static void decrypt_block(uint32* X, uint32 *Y, uint32 *sigma) {
 			encrypt_block(X  + i, Y + i, sigma);
 		}
 		encrypt_block(X + (act_sz - 8), Y + act_sz - 4, sigma);
-		uint32 diff = byteSZ - size;
-		memcpy(((byte*)X) + size, ((byte*)Y) + size, diff);
+		uint32 diff = byteSZ - size; //in bytes
+		uint32 diff2 = diff / 4 ; //in ints
+		uint32 at = (size - 1) >> 1;
+		for (size_t jj = 0; jj<diff2; ++jj) {
+			X[at+jj] = Y[at+jj];
+		}
+		for (size_t jj = 0; jj < diff; ++jj) {
+			*(((byte*)(X + act_sz - 1)) + jj) = *(((byte*)(Y + act_sz - 1)) + jj);
+		}
 		encrypt_block(X + (act_sz - 4), Y + (act_sz - 8), sigma);
 	}
 	for (int i = 0; i < act_sz; ++i) {
@@ -251,8 +249,15 @@ static void decrypt_block(uint32* X, uint32 *Y, uint32 *sigma) {
 			decrypt_block(X  + i, Y + i, sigma);
 		}
 		decrypt_block(X + (act_sz - 8), Y + act_sz - 4, sigma);
-		uint32 diff = byteSZ - size;
-		memcpy(((byte*)X) + size, ((byte*)Y) + size, diff);
+		uint32 diff = byteSZ - size; //in bytes
+		uint32 diff2 = diff / 4 ; //in ints
+		uint32 at = (size - 1) >> 1;
+		for (size_t jj = 0; jj<diff2; ++jj) {
+			X[at+jj] = Y[at+jj];
+		}
+		for (size_t jj = 0; jj < diff; ++jj) {
+			*(((byte*)(X + act_sz - 1)) + jj) = *(((byte*)(Y + act_sz - 1)) + jj);
+		}
 		decrypt_block(X + (act_sz - 4), Y + (act_sz - 8), sigma);
 	}
 	for (int i = 0; i < act_sz; ++i) {
@@ -277,22 +282,71 @@ static void decrypt_block(uint32* X, uint32 *Y, uint32 *sigma) {
 static  void belt_ctr(byte *XX, uint32 size, byte *Sigma, byte *S, byte *to){
 	uint32 ss[4], ss2[4];
 	uint32 *sigma = (uint32*)Sigma;
-	encrypt_block((uint32*)S, ss, sigma);
+
+	for (size_t i = 0; i < 32; i += 4) {
+		byte*l = ((byte*)sigma) + i, 
+			*r = ((byte*)sigma) + 3 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = ((byte*)sigma) + i + 1, 
+			r = ((byte*)sigma) + 2 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+	}
+
 	uint32 act_sz = ((size - 1) / 16 + 1) * 4;
 	uint32 *X = new uint32[act_sz];
 	uint32 *Y = new uint32[act_sz];
 	uint32 byteSZ = act_sz << 2;
+	memset(X, 0U, sizeof X);
 	memcpy(X, XX, size);
-	BigInteger s((byte*)ss, 16);
+	for (size_t i = 0; i < byteSZ; i += 4) {
+		byte*l = ((byte*)X) + i, 
+			*r = ((byte*)X) + 3 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = ((byte*)X) + i + 1, 
+			r = ((byte*)X) + 2 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+	}
+	uint32 S2[4];
+	memcpy(S2, S, 16);
+	for (size_t jj = 0; jj < 4; ++jj) change_endian((byte*)(S2 + jj));
+	encrypt_block(S2, ss, sigma);	
+	byte hlp[16];
+	memcpy(hlp, ss, sizeof hlp);
+	for (size_t jj = 0; jj < 16; jj += 4) change_endian(hlp+jj);
+
+	BigInteger s;
+	s.length = 4;
+	for (size_t jj =0 ; jj < 4; ++jj) s.data[jj] = ss[jj], change_endian((byte*)(s.data + jj));
 	BigInteger one(1);
+	change_endian((byte*)(one.data));
 	for (size_t i = 0; i < act_sz; i += 4) {
 		s += one;
 		s.reduce(4);
-		for (size_t j = 0; j < 4; ++j) ss2[j] = s.data[3 - j];
+		for (size_t j = 0; j < 4; ++j) ss2[j] = s.data[j],change_endian((byte*)(ss2 + j));;
 		encrypt_block(ss2, ss, sigma);
 		for (size_t j = 0; j < 4; ++j) Y[i + j] = X[i + j] ^ ss[j];
 	}
+		for (int i = 0; i < act_sz; ++i) {
+		change_endian((byte*)(Y + i));
+	}
 	memcpy(to, Y, size);
+
+
+	for (size_t i = 0; i < 32; i += 4) {
+		byte*l = ((byte*)sigma) + i, 
+			*r = ((byte*)sigma) + 3 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = ((byte*)sigma) + i + 1, 
+			r = ((byte*)sigma) + 2 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+	}
+
 	delete X;
 	delete Y;
 }
@@ -303,7 +357,29 @@ static void belt_mac(byte *XX, uint32 size, byte *Sigma, byte *to) {
 	uint32 *X = new uint32[act_sz];
 	uint32 *Y = new uint32[act_sz];
 	uint32 byteSZ = act_sz << 2;
+	memset(X, 0x00, sizeof X);
+	for (size_t jj = 0; jj < act_sz; ++jj) X[jj] ^= X[jj];
 	memcpy(X, XX, size);
+	for (size_t i = 0; i < byteSZ; i += 4) {
+		byte*l = ((byte*)X) + i, 
+			*r = ((byte*)X) + 3 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = ((byte*)X) + i + 1, 
+			r = ((byte*)X) + 2 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+	}
+	for (size_t i = 0; i < 32; i += 4) {
+		byte*l = ((byte*)sigma) + i, 
+			*r = ((byte*)sigma) + 3 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = ((byte*)sigma) + i + 1, 
+			r = ((byte*)sigma) + 2 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+	}
 	uint32 s[4], r[4];
 	memset(s, 0, sizeof s);
 	encrypt_block(s, r, sigma);
@@ -317,12 +393,23 @@ static void belt_mac(byte *XX, uint32 size, byte *Sigma, byte *to) {
 		phi1(r);
 		for (size_t i = 0; i < 4; ++i) s[i] ^= r[i] ^ X[act_sz - 4 + i];
 	} else {
-		psi(X + act_sz - 4, 4 - diff);
+		psi(X + act_sz - 4,16- diff);
 		phi2(r);
 		for (size_t i = 0; i < 4; ++i) s[i] ^= r[i] ^ X[act_sz - 4 + i];
 	}
 	encrypt_block(s, r, sigma);
+	for (size_t jj = 0; jj < 4; ++jj) change_endian((byte*)(r + jj));
 	memcpy(to, r, 8);
+	for (size_t i = 0; i < 32; i += 4) {
+		byte*l = ((byte*)sigma) + i, 
+			*r = ((byte*)sigma) + 3 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = ((byte*)sigma) + i + 1, 
+			r = ((byte*)sigma) + 2 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+	}
 	delete X;
 	delete Y;
 }
@@ -351,7 +438,7 @@ static  void belt_hash_step(byte* XX, uint32 cur_len, byte *STATE, byte *to = NU
 	uint32 s[4];
 	memset(s, 0, sizeof s);
 	uint32 act_sz = 8;
-	uint32 h[8] = {0x0DCEFD02, 0xC2722E25, 0xACC7B61B, 0x9DFA0485, 0xE45D4A58, 0x8E006D36, 0x3BF5080A,0xC8BA94B1};	
+	byte  h[32] = { 0xB1 ,0x94 ,0xBA ,0xC8 ,0x0A ,0x08 ,0xF5 ,0x3B ,0x36 ,0x6D ,0x00 ,0x8E ,0x58 ,0x4A ,0x5D ,0xE4 ,0x85 ,0x04 ,0xFA ,0x9D ,0x1B ,0xB6 ,0xC7 ,0xAC ,0x25 ,0x2E ,0x72 ,0xC2 ,0x02 ,0xFD ,0xCE ,0x0D};
 	if (cur_len == 0 && XX != NULL) {
 		memcpy(STATE + 16, s, sizeof s);
 		memcpy(STATE + 16 + sizeof s, h, sizeof h);
@@ -360,40 +447,67 @@ static  void belt_hash_step(byte* XX, uint32 cur_len, byte *STATE, byte *to = NU
 	} else {
 		if (XX == NULL) {
 			uint32 tmp3[8];
-			sigma2((uint32*)STATE, tmp3);
+			uint32 tmp1[16];
+			memcpy(tmp1, STATE, sizeof tmp1);
+			for (size_t  i = 0; i < 16; ++i) change_endian((byte*)(tmp1 + i));
+			sigma2(tmp1, tmp3);
 			memcpy(to, tmp3, 32);
 			return;
 		}
  		uint32 *X = new uint32[act_sz];
 		uint32 byteSZ = act_sz << 2;
 		memcpy(X, XX, cur_len);
-		uint32 tmp1[4], tmp2[8], tmp3[16];
+		
+
 		memcpy(s, STATE + 16, sizeof s);
 		memcpy(h, STATE + sizeof s + 16, sizeof h);
+		for (size_t i = 0; i < byteSZ; i += 4) {
+		byte*l = ((byte*)X) + i, 
+			*r = ((byte*)X) + 3 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = ((byte*)X) + i + 1, 
+			r = ((byte*)X) + 2 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+	}
+		for (size_t i = 0; i < 16; i += 4) {
+		byte*l = ((byte*)s) + i, 
+			*r = ((byte*)s) + 3 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+		l = ((byte*)s) + i + 1, 
+			r = ((byte*)s) + 2 + i;
+
+		*r ^= *l, *l ^= *r, *r ^= *l;
+	}
 		uint64 X_LEN;
 		memcpy(&X_LEN, STATE + 8, 8);
-		X_LEN += cur_len;
-		for (size_t j = 0; j < 8; ++j) tmp3[j] = X[j], tmp3[8 + j] = h[j];
+		X_LEN += cur_len << 2;
+				uint32 tmp1[4], tmp2[8], tmp3[16];
+		for (size_t j = 0; j < 8; ++j) tmp3[j] = X[j];
+		for (size_t j = 0; j < 32; ++j) *(((byte*)(tmp3+8)) + j) = h[j];
 		sigma1(tmp3, tmp1);
 		for (size_t j = 0; j < 4; ++j) s[j] ^= tmp1[j];
-		sigma2(tmp3, h);
+		sigma2(tmp3, tmp2);
+		for (size_t j = 0; j < 8; ++j) change_endian((byte*)(tmp2 + j));
 		memcpy(STATE + 16, s, sizeof s);
-		memcpy(STATE + 16 + sizeof s, h, sizeof h);
+		memcpy(STATE + 16 + sizeof s, tmp2, sizeof h);
 		memcpy(STATE + 8, &X_LEN, 8);
 	}
 }
 
  static void belt_hash(byte *XX, uint32 size, byte *to) {
-
-	 belt_hash_step(XX, 0, to);
+	 byte STATE[64];
+	 belt_hash_step(XX, 0,STATE);
 	uint32 actSIZE = 0;
 	while (actSIZE + 8 < size) {
-		belt_hash_step(XX + actSIZE, 8, to);
+		belt_hash_step(XX + actSIZE, 8, STATE);
 		actSIZE += 8;
 	}
 	size-=actSIZE;
-	belt_hash_step(XX + actSIZE, size, to, to);
-	belt_hash_step(NULL, 0, to);
+	belt_hash_step(XX + actSIZE, size, STATE, to);
+	belt_hash_step(NULL, 0, STATE, to);
 }
 
  static void belt_keyrep(byte *X, byte b, byte *to) {
@@ -404,11 +518,13 @@ static  void belt_hash_step(byte* XX, uint32 cur_len, byte *STATE, byte *to = NU
 	memset(I, 0, sizeof I);
 	I[0] = b;
 	uint32 r = 0x7B653CF3;
+	change_endian((byte*)&r);
 	uint32 preY[16];
 	preY[0] = r;
 	memcpy(preY + 1, D, sizeof D);
 	memcpy(preY + 4, I, sizeof I);
 	memcpy(preY + 8, X, 32);
+	for (size_t jj = 1; jj < 16; ++jj) change_endian((byte*)(preY +jj));
 	uint32 Y[8];
 	sigma2(preY, Y);
 	memcpy(to, Y, sizeof Y);
