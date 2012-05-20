@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "typedef.h"
-#define MAX_LEN 16
+#define MAX_LEN 32
 #define MAX_VALUE ((1ULL << 32) - 1)
 
 class BigInteger {
@@ -74,6 +74,19 @@ public:
 
 	BigInteger powMod(uint32 n, const BigInteger &mod);
 
-
+	friend BigInteger powMod(BigInteger a, BigInteger n,  const BigInteger &mod) {
+		BigInteger zero(0), one(1);
+		BigInteger ret(1);
+		while (n > zero) {
+			if (n.data[0] & 1) {
+				ret *= (a) %= mod;
+				n-=one;
+			} else {
+				(a *= a) %= mod;
+				n >>= 1;
+			}
+		}
+		return ret;
+	}
 };
 
