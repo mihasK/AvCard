@@ -1,4 +1,3 @@
-#pragma once
 #include "belt.h"
 
 static void phi1(uint32* u) {
@@ -412,7 +411,7 @@ static void sigma2(uint32 * U, uint32 *u) {
 }
 
 
-static  void belt_hash_step(byte* XX, uint32 cur_len, byte *STATE, byte *to = NULL) {
+static  void belt_hash_step(byte* XX, uint32 cur_len, byte *STATE, byte *to) {
 	uint32 s[4];
 	memset(s, 0, sizeof s);
 	uint32 act_sz = 8;

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "point.h"
 #include <ctime>
 #include "belt.h"

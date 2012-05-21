@@ -168,7 +168,7 @@ public:
 		Point R(BigInteger(0), BigInteger(0));
 		uint32 m = max(k.getBitsLength(), l.getLength());
 		while (m >=0 ) {
-			uint32 t = (k.getBit(m) << 1) | l.getBit(m);
+			uint32 t = ((int)k.getBit(m) << 1) | l.getBit(m);
 			R += R;
 			if (t == 3) R += C;
 			else if (t == 2) R += a;
