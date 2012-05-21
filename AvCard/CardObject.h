@@ -7,6 +7,9 @@ class CardObject
 private:
 	bool active;
 public:
+	bool isActive(){
+		return active;
+	}
 	virtual void activate(){
 		active=true;
 	}

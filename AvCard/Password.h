@@ -10,4 +10,11 @@ public:
 	Password(void);
 	~Password(void);
 };
+class PIN :public Password{
+
+}
+
+class PUK :public Password{
+
+}
 

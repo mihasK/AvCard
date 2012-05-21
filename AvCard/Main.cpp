@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include "tests.h"
+#include "Tests.h"
 
 
 using namespace std;
@@ -10,7 +10,7 @@ int main(){
 	tests::belt_test();
 	tests::testRNG();
 	tests::testTimer();
-	tests::testPACE();
+	//tests::testPACE();
 	return 0;
 
 
