@@ -1,6 +1,5 @@
 #pragma once
-#include "point.h"
-static void swu(byte *X, uint32 size, byte* P){};
+
 
 
 static uint32 getSize(const uint32 &source) {
