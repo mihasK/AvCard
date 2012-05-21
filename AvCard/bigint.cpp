@@ -2,7 +2,7 @@
 #include "helpers.h"
 
 bool BigInteger::getBit(const uint32 &at) const {
-		 return ::getBit(this->data, at);
+	return ::getBit(this->data, at);
 }
 
 void BigInteger::LevelUp()
@@ -13,8 +13,11 @@ void BigInteger::LevelUp()
 }
 
 BigInteger::BigInteger(uint32 t) {
+
+	memset(this->data, 0x00,sizeof this->data);
 	this->length = 1;
 	this->data[0] = t;
+
 }
 
 BigInteger::BigInteger() {
@@ -22,8 +25,8 @@ BigInteger::BigInteger() {
 	if (!once) {
 		once = 1;
 	}
-	length = 1;
-	data[0] = 0;
+	length = 1;	memset(this->data, 0x00,sizeof this->data);
+
 }
 
 int BigInteger ::getLength() const{
@@ -43,6 +46,8 @@ byte *BigInteger::getData() const {
 
 
 BigInteger::BigInteger(byte *data, int length) {
+
+	memset(this->data, 0x00,sizeof this->data);
 	this->length = 0;
 	memset(this->data, 0, sizeof this->data);
 	for (int at = 0; at < length; at += 4) {
@@ -149,7 +154,7 @@ BigInteger& BigInteger::operator*=(const uint32& b) {
 		actual *= b;
 		actual += carry;
 		this->data[at] = actual;
-		carry = sizeof ( uint32 ) * 8;
+		carry = actual >> sizeof ( uint32 ) * 8;
 	}
 	while (this->length > 1 && this->data[this->length - 1] == 0) --this->length;
 	return *this;
@@ -159,16 +164,24 @@ BigInteger& BigInteger::operator *= (const BigInteger& another) {
 	memcpy(temp, this->data, (sizeof uint32) * this->length);
 	size_t len = this->length;
 	size_t i , j ;
-	uint32 carry ;
+	uint32 carry=0 ;
 	uint64 mul ;
-	for (size_t at = 0; at < (sizeof this->data) / sizeof this->data[0]; this->data[at++] = 0);
-	for ( i = 0; i < another.length; ++ i ) {
-		for ( j = 0, carry = 0; j < len; ++ j )
-			((( mul = another.data [ i ]) *= temp [ j ]) += carry) += this->data [ i + j ] ,
-			this->data [ i + j ] = mul ,
-			carry = mul >> sizeof ( uint32 ) * 8;
-		this->data [ i + j ] = carry ;
+	uint32 t[MAX_LEN+1];
+	memset(t, 0x00, sizeof t);
+	for (i = 0 ; i < len; ++i) {
+		carry = 0;
+		for (j = 0; j < another.length || carry; ++j) {
+			mul = t[i + j];
+			mul += ((1ULL) * temp[i]) * (j < another.length ? another.data[j] : 0ULL);
+			mul += carry;
+			t[i + j] = mul;
+			carry = mul >> 32;
+		}
 	}
+
+	this->length <<= 1;
+	memcpy(this->data, t, length << 2);
+	while (this->length > 1 && this->data[this->length - 1] == 0) --this->length;
 	delete temp;
 	return *this;
 }
@@ -249,18 +262,19 @@ BigInteger& BigInteger::operator/=(const BigInteger& another) {
 	memcpy(digits, this->data, this->length * (sizeof this->data[0]));
 	memset(this->data, 0, sizeof this->data);
 	int len = this->length;
-	for (int i = len; i>=0; --i) {
+	for (int i = len - 1; i>=0; --i) {
 		cur1.LevelUp();
 		cur1.data[0] = digits[i];
-		uint32 x = 0, l = 0, r = MAX_VALUE;
+		uint64 x = 0, l = 0, r = MAX_VALUE;
 		while (l <= r) {
-			uint32 m = (l + (r - l)) >> 1;
+			uint32 m = l + ((r - l) >> 1);
 			cur2 = another * m;
 			if (cur2 <= cur1) {
 				x = m;
-				l = m + 1;
+				l = m;
+				++l;
 			} else {
-				r = m- 1;
+				r = m;--r;
 			}
 		}
 		this->data[i] = x;
@@ -296,9 +310,9 @@ BigInteger operator+(const BigInteger &a, const BigInteger& b) {
 }
 
 BigInteger operator-(const BigInteger &a, const BigInteger& b) {
-		BigInteger ret = a;
-		ret -= b;
-		return ret;
+	BigInteger ret = a;
+	ret -= b;
+	return ret;
 }
 
 BigInteger operator *(const BigInteger &a, const BigInteger& b) {
@@ -323,10 +337,10 @@ BigInteger BigInteger::pow(uint32 n) {
 	return ret;
 }
 
-BigInteger BigInteger::powMod(uint32 n, const BigInteger &mod) {
+BigInteger powMod(BigInteger a, uint32 n, const BigInteger &mod) {
 	BigInteger ret;
 	ret.data[0] = 1;
-	BigInteger t = (*this);
+	BigInteger t = a;
 	while (n) {
 		if (n & 1) { (ret *= t) %= mod, --n;}
 		else { (t *= t ) %= mod; n >>= 1;}

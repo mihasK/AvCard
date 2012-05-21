@@ -157,7 +157,7 @@ void SecureMessaging::rndNumberUnderQ(byte* to){
 	byte* proto=new byte[PACE_KEY_EFFICIENT_LENGHT];
 	do{ 
 		 rng->get(to,PACE_KEY_EFFICIENT_LENGHT);
-		 memcpy(to, (BigInteger(proto,PACE_KEY_EFFICIENT_LENGHT) % bign_curve256v1::getData().q).getData(),
+		 memcpy(to, (BigInteger(proto,PACE_KEY_EFFICIENT_LENGHT) % bign_curve256v1::getQ()).getData(),
 			 PACE_KEY_EFFICIENT_LENGHT);
 	 } while(to[PACE_KEY_EFFICIENT_LENGHT-1]  ==  0);
 	delete[PACE_KEY_EFFICIENT_LENGHT] proto;

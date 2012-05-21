@@ -140,5 +140,20 @@ namespace tests {
 		t <<= 4;
 		uint32 q = t + 2;
 	}
-
+	void bign_test() {
+		#include "point.h"
+		BigInteger A = bign_curve256v1::getA(),
+			B = bign_curve256v1::getB(),
+			P = bign_curve256v1::getP(),
+			Y = bign_curve256v1::getY(),
+			X = BigInteger(0);
+		BigInteger Q = Y * Y;
+		BigInteger rem = Q / P;
+		BigInteger AA = rem * P;
+		bool a = Q >= AA;
+		(Y *= Y )%= P;
+		BigInteger right = (X * X * X) % P + A * X  + B;
+		right%= P;
+		cout << (Y == right);
+	}
 };
